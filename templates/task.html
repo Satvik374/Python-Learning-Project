@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Python Quest</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-title">Python Quest</div>
+        <div class="brand-subtitle">Beginner Track</div>
+      </div>
+      <div class="task-list">
+        {% for t in tasks %}
+          {% set kind = 'Quiz' if t.__class__.__name__ == 'QuizTask' else 'Code' %}
+          <a class="task-item {% if loop.index0 == index %}active{% endif %}" href="/task/{{ loop.index0 }}">
+            <span class="task-index">{{ loop.index }}.</span>
+            <span class="task-name">{{ kind }}: {{ t.title }}</span>
+          </a>
+        {% endfor %}
+      </div>
+      <div class="sidebar-footer">
+        <div>Score: {{ score }}</div>
+        <div>Completed: {{ completed_count }}/{{ total }}</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="header">
+        <div>
+          <h1>Welcome to Python Quest</h1>
+          <p>Learn core Python skills through quick quizzes and coding missions.</p>
+        </div>
+        <div class="pill">Score {{ score }}</div>
+      </header>
+
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <h2>{{ index + 1 }}. {{ task.title }}</h2>
+            <span class="meta">{{ 'Quiz Challenge' if task.__class__.__name__ == 'QuizTask' else 'Code Challenge' }}</span>
+          </div>
+        </div>
+
+        {% if task.__class__.__name__ == 'QuizTask' %}
+          <p class="prompt">{{ task.question }}</p>
+          <form method="post" class="quiz-form">
+            {% for option in task.options %}
+              <label class="option">
+                <input type="radio" name="choice" value="{{ loop.index0 }}" {% if selected == loop.index0 %}checked{% endif %}>
+                <span>{{ option }}</span>
+              </label>
+            {% endfor %}
+            <button class="btn primary" type="submit">Check Answer</button>
+          </form>
+        {% else %}
+          <p class="prompt">{{ task.prompt }}</p>
+          <form method="post" class="code-form">
+            <textarea name="code" class="code-area" rows="14">{{ code_value }}</textarea>
+            <button class="btn primary" type="submit">Run Tests</button>
+          </form>
+          {% if results %}
+            <div class="results">
+              {% for r in results %}
+                <div class="result-row {{ 'pass' if r.ok else 'fail' }}">
+                  <span class="result-status">{{ 'PASS' if r.ok else 'FAIL' }}</span>
+                  <span class="result-name">{{ r.name }}</span>
+                  <span class="result-msg">{{ r.message }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {% if feedback.message %}
+          <div class="feedback {{ feedback.kind }}">{{ feedback.message }}</div>
+        {% endif %}
+      </section>
+
+      <nav class="nav">
+        {% if index > 0 %}
+          <a class="btn secondary" href="/task/{{ index - 1 }}">Previous</a>
+        {% else %}
+          <span></span>
+        {% endif %}
+        {% if index + 1 < total %}
+          <a class="btn primary" href="/task/{{ index + 1 }}">Next</a>
+        {% endif %}
+      </nav>
+    </main>
+  </div>
+</body>
+</html>
